@@ -16,7 +16,7 @@ router.delete("/:id", deleteCustomer);
 
 
 // GET /api/customers?search=abc
-router.get('/customers', async (req, res) => {
+router.get('/search', async (req, res) => {
   const search = (req.query.search || '').trim()
 
   try {

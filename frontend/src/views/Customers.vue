@@ -45,7 +45,7 @@
   </v-card>
 
   <!-- Add Customer Dialog -->
-  <v-dialog v-model="dialog" max-width="500">
+  <v-dialog v-model="dialog" max-width="650">
     <v-card class="pa-4 rounded-lg">
       <v-card-title class="text-h6">Add Customer</v-card-title>
       <v-form ref="addFormRef" class="mt-4 px-4">
@@ -61,19 +61,59 @@
               density="comfortable"
             />
 
+            <v-row dense>
+              <v-col cols="12" sm="5">
+                <v-text-field
+                  label="Phone"
+                  v-model="form.phone"
+                  :rules="[
+                    rules.required,
+                    rules.digitsOnly,
+                    rules.minLength(10),
+                    rules.maxLength(10),
+                  ]"
+                  maxlength="10"
+                  counter="10"
+                  variant="outlined"
+                  density="comfortable"
+                />
+              </v-col>
+              <v-col cols="12" sm="7">
+                <v-text-field
+                  label="Email"
+                  v-model="form.email"
+                  :rules="[rules.email]"
+                  variant="outlined"
+                  density="comfortable"
+                />
+              </v-col>
+            </v-row>
+            <v-row dense>
+              <v-col>
+                <v-select
+                  label="Category"
+                  v-model="form.category"
+                  :items="['Regular', 'Bulk']"
+                  variant="outlined"
+                  density="comfortable"
+                  :rules="[rules.required]"
+                />
+              </v-col>
+              <v-col>
+                <v-text-field
+                  label="Outstanding Balance"
+                  type="number"
+                  v-model="form.outstanding_balance"
+                  :rules="[rules.required, rules.numeric]"
+                  variant="outlined"
+                  density="comfortable"
+                />
+              </v-col>
+            </v-row>
             <v-text-field
-              label="Phone"
-              v-model="form.phone"
-              :rules="[rules.required, rules.digitsOnly, rules.minLength(10), rules.maxLength(10)]"
-              maxlength="10"
-              counter="10"
-              variant="outlined"
-              density="comfortable"
-            />
-            <v-text-field
-              label="Email"
-              v-model="form.email"
-              :rules="[rules.email]"
+              label="Delivery Location"
+              v-model="form.delivery_location"
+              :rules="[rules.required]"
               variant="outlined"
               density="comfortable"
             />
@@ -112,25 +152,63 @@
               density="comfortable"
             />
 
+            <v-row>
+              <v-col cols="12" sm="5">
+                <v-text-field
+                  label="Phone"
+                  v-model="editForm.phone"
+                  type="tel"
+                  maxlength="10"
+                  counter="10"
+                  :rules="[
+                    rules.required,
+                    rules.digitsOnly,
+                    rules.minLength(10),
+                    rules.maxLength(10),
+                  ]"
+                  variant="outlined"
+                  density="comfortable"
+                />
+              </v-col>
+              <v-col cols="12" sm="7">
+                <v-text-field
+                  label="Email"
+                  v-model="editForm.email"
+                  :rules="[rules.email]"
+                  variant="outlined"
+                  density="comfortable"
+                />
+              </v-col>
+            </v-row>
+            <v-row>
+              <v-col cols="12" sm="6">
+                <v-select
+                  label="Category"
+                  v-model="editForm.category"
+                  :items="['Regular', 'Bulk']"
+                  variant="outlined"
+                  density="comfortable"
+                  :rules="[rules.required]"
+                />
+              </v-col>
+              <v-col cols="12" sm="6">
+                <v-text-field
+                  label="Outstanding Balance"
+                  v-model="editForm.outstanding_balance"
+                  type="number"
+                  variant="outlined"
+                  density="comfortable"
+                  :rules="[rules.required, rules.numeric]"
+                />
+              </v-col>
+            </v-row>
             <v-text-field
-              label="Phone"
-              v-model="editForm.phone"
-              type="tel"
-              maxlength="10"
-              counter="10"
-              :rules="[rules.required, rules.digitsOnly, rules.minLength(10), rules.maxLength(10)]"
+              label="Delivery Location"
+              v-model="editForm.delivery_location"
               variant="outlined"
               density="comfortable"
+              :rules="[rules.required]"
             />
-
-            <v-text-field
-              label="Email"
-              v-model="editForm.email"
-              :rules="[rules.email]"
-              variant="outlined"
-              density="comfortable"
-            />
-
             <v-textarea
               label="Address"
               v-model="editForm.address"
@@ -193,8 +271,25 @@ const editDialog = ref(false)
 // Customers Data
 const customers = ref([])
 // Forms
-const form = ref({ name: '', phone: '', address: '', email: '' })
-const editForm = ref({ id: null, name: '', phone: '', address: '', email: '' })
+const form = ref({
+  name: '',
+  phone: '',
+  address: '',
+  email: '',
+  category: '',
+  outstanding_balance: '',
+  delivery_location: '',
+})
+const editForm = ref({
+  id: null,
+  name: '',
+  phone: '',
+  address: '',
+  email: '',
+  category: '',
+  outstanding_balance: '',
+  delivery_location: '',
+})
 
 // Table Headers
 const headers = [
@@ -203,6 +298,10 @@ const headers = [
   { title: 'Phone', key: 'phone' },
   { title: 'Address', key: 'address' },
   { title: 'Email', key: 'email' },
+  { title: 'Category', key: 'category' },
+  { title: 'Outstanding Balance', key: 'outstanding_balance' },
+  { title: 'Delivery Location', key: 'delivery_location' },
+  { title: 'Address', key: 'address' },
   { title: 'Actions', key: 'actions', sortable: false },
 ]
 
@@ -243,7 +342,15 @@ const addCustomer = async () => {
   try {
     await axios.post('http://localhost:5000/api/customers', form.value)
     dialog.value = false
-    form.value = { name: '', phone: '', address: '', email: '' }
+    form.value = {
+      name: '',
+      phone: '',
+      address: '',
+      email: '',
+      category: '',
+      outstanding_balance: '',
+      delivery_location: '',
+    }
     fetchCustomers()
     showToast('Customer added successfully', 'success')
   } catch (err) {
